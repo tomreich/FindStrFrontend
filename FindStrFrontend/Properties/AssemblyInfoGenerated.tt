@@ -1,0 +1,6 @@
+﻿<#@ template language="C#" #>
+using System;
+using System.Reflection;
+
+[assembly: AssemblyCopyright("Copyright © Tom Reich <#=DateTime.Now.Year#>")]
+[assembly: AssemblyVersion("<#=DateTime.Now.Year#>.<#=DateTime.Now.Month#>.<#=DateTime.Now.Day#>.*")]
