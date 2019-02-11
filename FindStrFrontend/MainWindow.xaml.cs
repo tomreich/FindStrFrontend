@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -141,6 +142,16 @@ namespace FindStrFrontend
         {
             if (!string.IsNullOrWhiteSpace((outputBox.SelectedItem as ResultLine)?.File))
                 Process.Start("explorer.exe", $"/select,\"{(outputBox.SelectedItem as ResultLine).File}\"");
+        }
+
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+            Environment.Exit(0);
+        }
+
+        private void About_Click(object sender, RoutedEventArgs e)
+        {
+            new AboutDialog().ShowDialog();
         }
     }
 }

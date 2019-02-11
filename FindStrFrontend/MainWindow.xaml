@@ -25,7 +25,22 @@
         mc:Ignorable="d"
         Title="FindStr Frontend" Height="550" Width="725"
         DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    
+      
     <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Export Results" Click="Export_Click"/>
+                <Separator />
+                <MenuItem Header="E_xit" Click="Exit_Click"/>
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Header="Show _Command" Click="ShowCommand_Click"/>
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About" Click="About_Click"/>
+            </MenuItem>
+        </Menu>
         <StatusBar DockPanel.Dock="Bottom">
             <StatusBar.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -86,9 +101,7 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,10">
-                <Button x:Name="SearchButton" Click="Search_Click">Search</Button>
-                <Button x:Name="ShowCommandButton" Click="ShowCommand_Click" Margin="10,0,0,0">Show Command</Button>
-                <Button x:Name="ExportButton" Click="Export_Click" Margin="10,0,0,0">Export Results</Button>
+                <Button x:Name="SearchButton" Click="Search_Click" Padding="5" IsDefault="True">Search</Button>
             </StackPanel>
 
             <ListView x:Name="outputBox" ItemsSource="{Binding resultLines}" Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="2" MouseDoubleClick="OpenWithDefaultViewer_Click">
