@@ -1,0 +1,34 @@
+<Window x:Class="FindStrFrontend.CommandDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterOwner"
+        SizeToContent="Height"
+        Width="550"
+        MinHeight="180"
+        ResizeMode="NoResize"
+        Title="FindStr Command">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Margin="0,0,0,8" TextWrapping="Wrap"
+                   Text="You can edit the command below, then copy it to the clipboard." />
+
+        <TextBox x:Name="CommandText" Grid.Row="1" 
+                 TextWrapping="Wrap" AcceptsReturn="False"
+                 MinHeight="50" VerticalScrollBarVisibility="Auto"
+                 FontFamily="Consolas" FontSize="13"
+                 Padding="6,4" />
+
+        <WrapPanel Grid.Row="2" HorizontalAlignment="Right" Margin="0,15,0,0">
+            <Button x:Name="CopyButton" Click="Copy_Click" MinWidth="120" Margin="0,0,10,0">Copy to Clipboard</Button>
+            <Button IsDefault="True" Click="Close_Click" MinWidth="60">Close</Button>
+        </WrapPanel>
+    </Grid>
+</Window>

@@ -49,6 +49,17 @@ namespace FindStrFrontend
         {
             if(_findStr?.HasExited != false)
             {
+                if (!Directory.Exists(SourceDirectory.Text))
+                {
+                    MessageBox.Show("The specified base directory does not exist:\n\n" + SourceDirectory.Text, "Invalid Directory", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    SourceDirectory.Focus();
+                    SourceDirectory.SelectAll();
+                    return;
+                }
+
+                Properties.Settings.Default.DefaultDirectory = SourceDirectory.Text;
+                Properties.Settings.Default.Save();
+
                 resultLines.Clear();
                 totalMatches.Text = "0";
                 _findStr = new Process() { StartInfo = new ProcessStartInfo() { FileName = FINDSTR_FILE_NAME, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true, Arguments = GenerateFindstrCommandArguments() } };
@@ -97,7 +108,7 @@ namespace FindStrFrontend
 
         private void ShowCommand_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show(FINDSTR_FILE_NAME + " " + GenerateFindstrCommandArguments(), "FindStr Command");
+            new CommandDialog(FINDSTR_FILE_NAME + " " + GenerateFindstrCommandArguments()) { Owner = this }.ShowDialog();
         }
 
         private string GenerateFindstrCommandArguments()
@@ -105,28 +116,130 @@ namespace FindStrFrontend
             return $"/N {(Recursive.IsChecked == true ? "/S" : "")} {(SkipBinary.IsChecked == true ? "/P" : "")} {(CaseSensitive.IsChecked == true ? "" : "/I")} {(RegularExpressions.IsChecked == true ? "/R" : "")} {(Literal.IsChecked == true ? "/C:" : "")}\"{Needle.Text}\" \"{SourceDirectory.Text}\\{FileFilter.Text}\"";
         }
 
+        private string GetSelectedFilePath()
+        {
+            var file = (outputBox.SelectedItem as ResultLine)?.File;
+            if (string.IsNullOrWhiteSpace(file))
+                return null;
+            if (!File.Exists(file))
+            {
+                MessageBox.Show("The file no longer exists:\n\n" + file, "File Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return null;
+            }
+            return file;
+        }
+
         private void OpenInNotepad_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace((outputBox.SelectedItem as ResultLine)?.File))
-                Process.Start("notepad.exe", QUOTE + (outputBox.SelectedItem as ResultLine).File + QUOTE);
+            var file = GetSelectedFilePath();
+            if (file == null) return;
+            try
+            {
+                Process.Start("notepad.exe", QUOTE + file + QUOTE);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not open file in Notepad:\n\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void OpenWithDefaultViewer_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace((outputBox.SelectedItem as ResultLine)?.File))
-                Process.Start(QUOTE + (outputBox.SelectedItem as ResultLine).File + QUOTE);
+            var file = GetSelectedFilePath();
+            if (file == null) return;
+            try
+            {
+                Process.Start(QUOTE + file + QUOTE);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not open file:\n\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void OpenInNotepadPlusPlus_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace((outputBox.SelectedItem as ResultLine)?.File))
-                Process.Start("notepad++", $"-n{(outputBox.SelectedItem as ResultLine).Line} \"{(outputBox.SelectedItem as ResultLine).File}\"");
+            var file = GetSelectedFilePath();
+            if (file == null) return;
+            var line = (outputBox.SelectedItem as ResultLine).Line;
+            var nppPath = GetNotepadPlusPlusPath();
+            if (nppPath == null) return;
+            try
+            {
+                Process.Start(nppPath, $"-n{line} \"{file}\"");
+            }
+            catch (Exception ex)
+            {
+                if (!PromptForNotepadPlusPlusPath(ex.Message)) return;
+                try
+                {
+                    Process.Start(Properties.Settings.Default.NotepadPlusPlusPath, $"-n{line} \"{file}\"");
+                }
+                catch (Exception ex2)
+                {
+                    MessageBox.Show("Could not open file in Notepad++:\n\n" + ex2.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         private void OpenInNotepadPlusPlusAdmin_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace((outputBox.SelectedItem as ResultLine)?.File))
-                Process.Start(new ProcessStartInfo("notepad++", $"-n{(outputBox.SelectedItem as ResultLine).Line} \"{(outputBox.SelectedItem as ResultLine).File}\"") { Verb="runas" });
+            var file = GetSelectedFilePath();
+            if (file == null) return;
+            var line = (outputBox.SelectedItem as ResultLine).Line;
+            var nppPath = GetNotepadPlusPlusPath();
+            if (nppPath == null) return;
+            try
+            {
+                Process.Start(new ProcessStartInfo(nppPath, $"-n{line} \"{file}\"") { Verb = "runas" });
+            }
+            catch (Exception ex)
+            {
+                if (!PromptForNotepadPlusPlusPath(ex.Message)) return;
+                try
+                {
+                    Process.Start(new ProcessStartInfo(Properties.Settings.Default.NotepadPlusPlusPath, $"-n{line} \"{file}\"") { Verb = "runas" });
+                }
+                catch (Exception ex2)
+                {
+                    MessageBox.Show("Could not open file in Notepad++ (Admin):\n\n" + ex2.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private string GetNotepadPlusPlusPath()
+        {
+            var saved = Properties.Settings.Default.NotepadPlusPlusPath;
+            if (!string.IsNullOrWhiteSpace(saved))
+            {
+                if (File.Exists(saved))
+                    return saved;
+                MessageBox.Show("The saved Notepad++ path no longer exists:\n\n" + saved, "Notepad++ Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Properties.Settings.Default.NotepadPlusPlusPath = "";
+                Properties.Settings.Default.Save();
+            }
+            return "notepad++";
+        }
+
+        private bool PromptForNotepadPlusPlusPath(string errorMessage)
+        {
+            var result = MessageBox.Show("Could not launch Notepad++:\n\n" + errorMessage + "\n\nWould you like to browse for the Notepad++ executable?",
+                "Notepad++ Not Found", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result != MessageBoxResult.Yes)
+                return false;
+            using (var ofd = new System.Windows.Forms.OpenFileDialog()
+            {
+                Title = "Locate Notepad++",
+                Filter = "Executable Files|*.exe",
+                FileName = "notepad++.exe"
+            })
+            {
+                if (ofd.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+                    return false;
+                Properties.Settings.Default.NotepadPlusPlusPath = ofd.FileName;
+                Properties.Settings.Default.Save();
+                return true;
+            }
         }
 
         private async void Export_Click(object sender, RoutedEventArgs e)
@@ -140,8 +253,16 @@ namespace FindStrFrontend
 
         private void ShowInExplorer_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace((outputBox.SelectedItem as ResultLine)?.File))
-                Process.Start("explorer.exe", $"/select,\"{(outputBox.SelectedItem as ResultLine).File}\"");
+            var file = GetSelectedFilePath();
+            if (file == null) return;
+            try
+            {
+                Process.Start("explorer.exe", $"/select,\"{file}\"");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not open Explorer:\n\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void Exit_Click(object sender, RoutedEventArgs e)

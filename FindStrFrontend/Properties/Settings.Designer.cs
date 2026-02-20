@@ -34,5 +34,17 @@ namespace FindStrFrontend.Properties {
                 this["DefaultDirectory"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string NotepadPlusPlusPath {
+            get {
+                return ((string)(this["NotepadPlusPlusPath"]));
+            }
+            set {
+                this["NotepadPlusPlusPath"] = value;
+            }
+        }
     }
 }
