@@ -66,62 +66,89 @@
             </StatusBarItem>
         </StatusBar>
         <Grid Margin="10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Label Content="Search String" Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" />
-            <TextBox x:Name="Needle" Grid.Column="1" Grid.Row="0" />
+            <!-- Search GroupBox -->
+            <GroupBox Header="Search" Grid.Row="0" Margin="0,0,0,6" Padding="8,6">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-            <Label Content="Base Directory" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" />
-            <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center">
-                <Button Click="DirectoryChoose_Click" MouseRightButtonUp="DirectoryChoose_RightClick" Margin="0,0,25,0">...</Button>
-                <TextBlock x:Name="SourceDirectory">C:\</TextBlock>
+                    <Label Content="Search String" Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" />
+                    <TextBox x:Name="Needle" Grid.Column="1" Grid.Row="0" Margin="0,4" />
+
+                    <Label Content="Base Directory" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" />
+                    <DockPanel Grid.Column="1" Grid.Row="1" Margin="0,4">
+                        <Button DockPanel.Dock="Left" Click="DirectoryChoose_Click" MouseRightButtonUp="DirectoryChoose_RightClick" 
+                                MinWidth="75" Margin="0,0,8,0" ToolTip="Left-click for folder picker, right-click for file picker">Browse...</Button>
+                        <TextBox x:Name="SourceDirectory">C:\</TextBox>
+                    </DockPanel>
+
+                    <Label Content="File Filter" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" />
+                    <TextBox x:Name="FileFilter" Grid.Column="1" Grid.Row="2" Width="180" HorizontalAlignment="Left" Margin="0,4"
+                             ToolTip="File name pattern, e.g. *.cs, *.txt">*</TextBox>
+                </Grid>
+            </GroupBox>
+
+            <!-- Options GroupBox -->
+            <GroupBox Header="Options" Grid.Row="1" Margin="0,0,0,6" Padding="8,6">
+                <StackPanel Orientation="Vertical">
+                    <CheckBox x:Name="Recursive" IsChecked="True">Recursive</CheckBox>
+                    <CheckBox x:Name="CaseSensitive" IsChecked="False">Case Sensitive</CheckBox>
+                    <CheckBox x:Name="Literal" IsChecked="False">Literal (Include Whitespace, etc.)</CheckBox>
+                    <CheckBox x:Name="SkipBinary" IsChecked="True">Skip Binary Files</CheckBox>
+                    <CheckBox x:Name="RegularExpressions" IsChecked="False">Use Regular Expressions</CheckBox>
+                </StackPanel>
+            </GroupBox>
+
+            <!-- Search Button -->
+            <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center" Margin="0,6,0,10">
+                <Button x:Name="SearchButton" Click="Search_Click" Padding="24,6" MinWidth="120" IsDefault="True" FontWeight="SemiBold">Search</Button>
             </StackPanel>
 
-            <Label Content="File Filter" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" />
-            <TextBox x:Name="FileFilter" Grid.Column="1" Grid.Row="2" Width="50" HorizontalAlignment="Left">*</TextBox>
-
-            <Label Content="Options" Grid.Column="0" Grid.Row="3" VerticalAlignment="Center" />
-            <StackPanel Orientation="Vertical" Grid.Column="1" Grid.Row="3" VerticalAlignment="Center">
-                <CheckBox x:Name="Recursive" IsChecked="True">Recursive</CheckBox>
-                <CheckBox x:Name="CaseSensitive" IsChecked="False">Case Sensitive</CheckBox>
-                <CheckBox x:Name="Literal" IsChecked="False">Literal (Include Whitespace, etc.)</CheckBox>
-                <CheckBox x:Name="SkipBinary" IsChecked="True">Skip Binary Files</CheckBox>
-                <CheckBox x:Name="RegularExpressions" IsChecked="False">Use Regular Expressions</CheckBox>
-            </StackPanel>
-
-            <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,10">
-                <Button x:Name="SearchButton" Click="Search_Click" Padding="5" IsDefault="True">Search</Button>
-            </StackPanel>
-
-            <ListView x:Name="outputBox" ItemsSource="{Binding resultLines}" Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="2" MouseDoubleClick="OpenWithDefaultViewer_Click">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="File" DisplayMemberBinding="{Binding File}"/>
-                        <GridViewColumn Header="Line" DisplayMemberBinding="{Binding Line}"/>
-                        <GridViewColumn Header="Contents" DisplayMemberBinding="{Binding Contents}"/>
-                    </GridView>
-                </ListView.View>
-                <ListView.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Open with Default Viewer" Click="OpenWithDefaultViewer_Click" />
-                        <MenuItem Header="Show in Explorer" Click="ShowInExplorer_Click" />
-                        <MenuItem Header="Open in Notepad" Click="OpenInNotepad_Click" />
-                        <MenuItem Header="Open in Notepad++" Click="OpenInNotepadPlusPlus_Click" />
-                        <MenuItem Header="Open in Notepad++ (Admin)" Click="OpenInNotepadPlusPlusAdmin_Click" />
-                    </ContextMenu>
-                </ListView.ContextMenu>
-            </ListView>
+            <!-- Results GroupBox -->
+            <GroupBox Header="Results" Grid.Row="3" Padding="0">
+                <ListView x:Name="outputBox" ItemsSource="{Binding resultLines}" BorderThickness="0"
+                          MouseDoubleClick="OpenWithDefaultViewer_Click" AlternationCount="2">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Style.Triggers>
+                                <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                                    <Setter Property="Background" Value="#F7F7F7" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="File" DisplayMemberBinding="{Binding File}" Width="200"/>
+                            <GridViewColumn Header="Line" DisplayMemberBinding="{Binding Line}" Width="60"/>
+                            <GridViewColumn Header="Contents" DisplayMemberBinding="{Binding Contents}" Width="400"/>
+                        </GridView>
+                    </ListView.View>
+                    <ListView.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Open with Default Viewer" Click="OpenWithDefaultViewer_Click" />
+                            <MenuItem Header="Show in Explorer" Click="ShowInExplorer_Click" />
+                            <MenuItem Header="Open in Notepad" Click="OpenInNotepad_Click" />
+                            <MenuItem Header="Open in Notepad++" Click="OpenInNotepadPlusPlus_Click" />
+                            <MenuItem Header="Open in Notepad++ (Admin)" Click="OpenInNotepadPlusPlusAdmin_Click" />
+                        </ContextMenu>
+                    </ListView.ContextMenu>
+                </ListView>
+            </GroupBox>
         </Grid>
     </DockPanel>
 </Window>

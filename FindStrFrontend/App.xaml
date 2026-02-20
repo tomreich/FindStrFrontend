@@ -21,6 +21,18 @@
              xmlns:local="clr-namespace:FindStrFrontend"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="4,3" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="10,4" />
+        </Style>
+        <Style TargetType="CheckBox">
+            <Setter Property="Margin" Value="0,3" />
+        </Style>
+        <Style TargetType="Label">
+            <Setter Property="Padding" Value="5,6" />
+        </Style>
     </Application.Resources>
 </Application>
